@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  
+
+   <main id="app"></main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.18.2/babel.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.5.4/react.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.5.4/react-dom.js"></script>
+  <script type="text/babel">
+  
+
+  function Counter(WrapperComponent){
+    class CounterHOC extends React.Component{
+      constructor(props){
+        super(props);
+        this.state = {
+        count: 0,
+      }
+      this.handleClick = this.handleClick.bind(this);
+      }
+      
+      getChildContext(){
+        return{
+          count: this.state.count,
+        }
+      }
+    handleClick(){
+    this.setState({
+      count: this.state.count + 1,
+    });   
+    }
+
+      render(){
+        return (<WrapperComponent onClick={this.handleClick}
+         {...this.props}/>) //esto es lo mismo que lo de abajo, ya que ...this.props esta diciendo que todas las props deber ser asiganadas a ese componente
+        //return (<WrapperComponent name={this.props.name} onClick={this.props.onClick}/>)
+      }
+    }
+    CounterHOC.childContextTypes = {
+      count: React.PropTypes.number,
+    }
+    return CounterHOC;
+  }
+
+
+  function Hola(props, context){
+    return(
+        <h1 id="Title" onClick={props.onClick}>
+      Hola {props.name} {context.count}
+    </h1>
+    );
+  
+  }
+
+  const HolaHOC = Counter(Hola);
+
+  Hola.contextTypes = {
+    count: React.PropTypes.number
+  };
+
+  
+  class NamePrueba extends React.Component{
+    constructor(props){
+      super(props);
+
+      this.state = {
+        count: 0,
+      }
+      this.handleClick = this.handleClick.bind(this)
+    }
+
+    getChildContext(){ //nos permite declarar valores que seran accesibles a todos los componentes de la aplicacion
+      return{
+        count: this.state.count,
+      };
+    }
+    componentWillMount(){
+      console.log('el componente se va a montar')
+    }
+    componentDidMount(){
+      document.addEventListener('click', this.handleClick)
+    }
+/*
+    componentWillReceiveProps(nextProps){
+      //podemos decir que si el props cambia, en este caso el nombre dublique el contador
+      this.setState({
+        count: this.state.count * 2,
+      })
+    }*/
+    shouldComponentUpdate(nextProps, nextState){
+      if(nextProps.count != this.state.count) return true
+      return false
+    }
+    componentWillUpdate(){
+      console.log('el componente se va a actualizar')
+    }
+    componentDidUpdate(){
+      console.log('el componente se actualizo')
+    }
+
+    componentWillUnmount()
+    {
+      document.removeEventListener('click', this.handleClick)
+    }
+   handleClick(){
+    this.setState({
+      count: this.state.count + 1,
+    }); 
+    }
+
+     handleMouseEnter(event){
+      console.log(event);
+    }
+    render(){
+      const name = this.props.name; 
+      return(
+        <Hola 
+          name={this.props.name}
+          count={this.state.count}
+          onClick={this.handleClick}
+          onMouseEnter={this.handleMouseEnter}
+
+        />
+      );
+    }
+  }
+
+  NamePrueba.childContextTypes = { //tenemos que definir que tipo de datos son los que se encuentran en el contexto
+      count: React.PropTypes.number
+  }
+  ReactDOM.render(
+    <HolaHOC name="Nicolas" />,
+    document.getElementById('app')
+  )
+  </script>
+</body>
+</html>
